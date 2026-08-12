@@ -1,0 +1,18 @@
+@namespace DesktopUi.Frontend
+@inherits LayoutComponentBase
+
+<div class="app-shell">
+    <header class="topbar">
+        <div class="brand">
+            <NavLink href="/" Match="NavLinkMatch.All">C# Desktop UI Framework</NavLink>
+            <span class="brand-sub">Cross-platform host · Blazor client</span>
+        </div>
+        <NavMenu />
+    </header>
+    <main class="content">
+        @Body
+    </main>
+    <footer class="footer">
+        Blazor WebAssembly · Desktop API <code>http://localhost:5081</code>
+    </footer>
+</div>
