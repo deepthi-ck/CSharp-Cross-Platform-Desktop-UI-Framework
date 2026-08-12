@@ -1,0 +1,7 @@
+{
+  "windowTtlSeconds": 300,
+  "maxWindows": 32,
+  "windowSlotCount": 3,
+  "apiBaseUrl": "http://localhost:5081",
+  "ipcPath": "/ipc/desktop"
+}

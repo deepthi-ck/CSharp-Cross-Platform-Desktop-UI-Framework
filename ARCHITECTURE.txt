@@ -1,0 +1,19 @@
+C# CROSS-PLATFORM DESKTOP UI FRAMEWORK
+======================================
+
+Runtime flow:
+
+  USER -> Desktop Shell (Blazor) -> Desktop API / IPC Bridge -> DesktopService
+       -> DesktopAppManager -> WindowRouter -> WindowNode -> InMemoryUiStore
+       -> SyncManager (multi-window sync) -> Frontend -> USER
+
+Canonical modules (no duplication):
+  shared/         DTOs, VersionInfo, BuildContext, DesktopConfiguration
+  desktop/        InMemoryUiStore, WindowKey, UiState, DesktopPolicy, DesktopStatistics
+  distribution/   WindowNode, WindowRouter, SyncManager, WindowRegistry
+  backend_csharp/ Orchestration, API, IPC (compiles desktop+distribution)
+  frontend_csharp/ Desktop UI client only (no authoritative routing)
+
+Branches: exactly 12 CSharp_FE{n}_BE{m} where FE != BE.
+Quality tools: quality/ only.
+Conceptual inspiration only: Electron.NET host↔UI patterns.

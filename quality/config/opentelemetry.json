@@ -1,0 +1,5 @@
+{
+  "service_name": "csharp-desktop-ui",
+  "exporters": ["console"],
+  "validate_endpoint": "http://localhost:5081/health"
+}

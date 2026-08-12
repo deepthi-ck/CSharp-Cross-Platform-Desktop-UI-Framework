@@ -1,0 +1,7 @@
+{
+  "seed_windows": [
+    { "windowId": "window:1001", "title": "MainShell" },
+    { "windowId": "window:2001", "title": "Settings" },
+    { "windowId": "window:3001", "title": "Inspector" }
+  ]
+}

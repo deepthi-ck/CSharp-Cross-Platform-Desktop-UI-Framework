@@ -1,0 +1,5 @@
+{
+  "open": { "windowId": "window:1001", "title": "MainShell" },
+  "update": { "windowId": "window:1001", "payload": "Visvantha" },
+  "close": { "windowId": "window:1001" }
+}

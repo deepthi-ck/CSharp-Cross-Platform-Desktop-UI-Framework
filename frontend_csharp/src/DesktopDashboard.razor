@@ -1,0 +1,75 @@
+@namespace DesktopUi.Frontend
+@page "/"
+@inject DesktopClient Client
+@inject VersionInfo Version
+@implements IAsyncDisposable
+
+<h1>C# Cross-platform Desktop UI Framework</h1>
+<p><strong>Branch:</strong> @Version.Branch</p>
+<p><strong>Frontend .NET:</strong> @Version.FrontendDotnet</p>
+<p><strong>Backend .NET:</strong> @Version.BackendDotnet</p>
+
+<section>
+  <h2>Desktop Shell</h2>
+  <label>Window Id <input @bind="windowId" /></label>
+  <label>Title <input @bind="title" /></label>
+  <label>Payload <input @bind="payload" /></label>
+  <div>
+    <button @onclick="Open">Open</button>
+    <button @onclick="Update">Update</button>
+    <button @onclick="Refresh">Get State</button>
+    <button @onclick="Close">Close</button>
+    <button @onclick="LoadStats">Stats</button>
+  </div>
+</section>
+
+<section>
+  <h2>Status</h2>
+  <p>@status</p>
+  @if (!string.IsNullOrEmpty(Client.LastError)) { <p style="color:darkred">Update/request: @Client.LastError</p> }
+  else if (Client.LastWindow is not null) { <p style="color:darkgreen">Last result accepted</p> }
+  <pre>@windowJson</pre>
+  <pre>@statsJson</pre>
+</section>
+
+@code {
+    private string windowId = "window:1001";
+    private string title = "MainShell";
+    private string payload = "Visvantha";
+    private string status = "Ready";
+    private string windowJson = "{}";
+    private string statsJson = "{}";
+
+    protected override void OnInitialized() => Client.StateChanged += () => InvokeAsync(StateHasChanged);
+
+    private async Task Open()
+    {
+        var r = await Client.OpenAsync(windowId, title);
+        status = r?.Message ?? "OPEN failed";
+        windowJson = System.Text.Json.JsonSerializer.Serialize(r);
+    }
+    private async Task Update()
+    {
+        var r = await Client.UpdateAsync(windowId, payload);
+        status = r?.Message ?? "UPDATE failed";
+        windowJson = System.Text.Json.JsonSerializer.Serialize(r);
+    }
+    private async Task Refresh()
+    {
+        var r = await Client.GetAsync(windowId);
+        status = r?.Message ?? "GET failed";
+        windowJson = System.Text.Json.JsonSerializer.Serialize(r);
+    }
+    private async Task Close()
+    {
+        var r = await Client.CloseAsync(windowId);
+        status = r?.Message ?? "CLOSE failed";
+        windowJson = System.Text.Json.JsonSerializer.Serialize(r);
+    }
+    private async Task LoadStats()
+    {
+        statsJson = System.Text.Json.JsonSerializer.Serialize(await Client.StatsAsync());
+        status = "Stats loaded";
+    }
+    public ValueTask DisposeAsync() => Client.DisposeAsync();
+}

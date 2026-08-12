@@ -1,0 +1,6 @@
+{
+  "open": { "success": true, "messageContains": "OPEN = SUCCESS" },
+  "update": { "success": true, "payloadContent": "Visvantha" },
+  "close": { "success": true, "status": "CLOSED" },
+  "getAfterClose": { "success": false, "status": "CLOSED" }
+}
