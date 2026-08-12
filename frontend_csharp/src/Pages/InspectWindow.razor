@@ -1,0 +1,43 @@
+@page "/inspect"
+@namespace DesktopUi.Frontend
+@inject DesktopClient Client
+
+<section class="panel">
+    <h1>Inspect window</h1>
+    <p class="lead">Read window state via <code>GET /desktop/windows/{id}</code>.</p>
+
+    <div class="form-grid">
+        <label>Window id
+            <input @bind="windowId" placeholder="window:1001" autocomplete="off" />
+        </label>
+        <label class="checkbox">
+            <input type="checkbox" @bind="synced" /> Prefer synced replica
+        </label>
+    </div>
+
+    <div class="actions">
+        <button type="button" @onclick="InspectAsync">Get state</button>
+    </div>
+
+    <p class="status">@status</p>
+    @if (!string.IsNullOrEmpty(Client.LastError)) { <p class="error">@Client.LastError</p> }
+    else if (Client.LastWindow is not null) { <p class="ok">State loaded</p> }
+    <pre class="result">@resultJson</pre>
+</section>
+
+@code {
+    private string windowId = string.Empty;
+    private bool synced;
+    private string status = "Enter a window id, then get state.";
+    private string resultJson = "{}";
+
+    protected override void OnInitialized() => Client.StateChanged += () => InvokeAsync(StateHasChanged);
+
+    private async Task InspectAsync()
+    {
+        if (string.IsNullOrWhiteSpace(windowId)) { status = "Window id is required."; return; }
+        var result = await Client.GetAsync(windowId.Trim(), synced);
+        status = result?.Message ?? "Get state failed";
+        resultJson = System.Text.Json.JsonSerializer.Serialize(result, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}
