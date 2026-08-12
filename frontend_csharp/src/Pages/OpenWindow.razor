@@ -1,0 +1,44 @@
+@page "/open"
+@namespace DesktopUi.Frontend
+@inject DesktopClient Client
+
+<section class="panel">
+    <h1>Open window</h1>
+    <p class="lead">Create a logical desktop window via <code>POST /desktop/windows</code>. Fields start empty.</p>
+
+    <div class="form-grid">
+        <label>Window id
+            <input @bind="windowId" placeholder="window:1001" autocomplete="off" />
+        </label>
+        <label>Title
+            <input @bind="title" placeholder="Enter window title" autocomplete="off" />
+        </label>
+    </div>
+
+    <div class="actions">
+        <button type="button" @onclick="OpenAsync">Open window</button>
+    </div>
+
+    <p class="status">@status</p>
+    @if (!string.IsNullOrEmpty(Client.LastError)) { <p class="error">@Client.LastError</p> }
+    else if (Client.LastWindow is not null) { <p class="ok">Window registered</p> }
+    <pre class="result">@resultJson</pre>
+</section>
+
+@code {
+    private string windowId = string.Empty;
+    private string title = string.Empty;
+    private string status = "Enter a window id and title, then open.";
+    private string resultJson = "{}";
+
+    protected override void OnInitialized() => Client.StateChanged += () => InvokeAsync(StateHasChanged);
+
+    private async Task OpenAsync()
+    {
+        if (string.IsNullOrWhiteSpace(windowId)) { status = "Window id is required."; return; }
+        if (string.IsNullOrWhiteSpace(title)) { status = "Title is required."; return; }
+        var result = await Client.OpenAsync(windowId.Trim(), title.Trim());
+        status = result?.Message ?? "Open failed";
+        resultJson = System.Text.Json.JsonSerializer.Serialize(result, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}
