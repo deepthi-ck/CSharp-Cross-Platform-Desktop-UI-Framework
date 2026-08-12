@@ -1,0 +1,38 @@
+@page "/close"
+@namespace DesktopUi.Frontend
+@inject DesktopClient Client
+
+<section class="panel">
+    <h1>Close window</h1>
+    <p class="lead">Close a logical window via <code>DELETE /desktop/windows/{id}</code>.</p>
+
+    <div class="form-grid">
+        <label>Window id
+            <input @bind="windowId" placeholder="window:1001" autocomplete="off" />
+        </label>
+    </div>
+
+    <div class="actions">
+        <button type="button" class="danger" @onclick="CloseAsync">Close window</button>
+    </div>
+
+    <p class="status">@status</p>
+    @if (!string.IsNullOrEmpty(Client.LastError)) { <p class="error">@Client.LastError</p> }
+    <pre class="result">@resultJson</pre>
+</section>
+
+@code {
+    private string windowId = string.Empty;
+    private string status = "Enter a window id, then close.";
+    private string resultJson = "{}";
+
+    protected override void OnInitialized() => Client.StateChanged += () => InvokeAsync(StateHasChanged);
+
+    private async Task CloseAsync()
+    {
+        if (string.IsNullOrWhiteSpace(windowId)) { status = "Window id is required."; return; }
+        var result = await Client.CloseAsync(windowId.Trim());
+        status = result?.Message ?? "Close failed";
+        resultJson = System.Text.Json.JsonSerializer.Serialize(result, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}
