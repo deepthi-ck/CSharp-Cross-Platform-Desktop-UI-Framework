@@ -1,0 +1,44 @@
+@page "/update"
+@namespace DesktopUi.Frontend
+@inject DesktopClient Client
+
+<section class="panel">
+    <h1>Update window</h1>
+    <p class="lead">Update window payload via <code>PUT /desktop/windows/{id}</code>. Fields start empty.</p>
+
+    <div class="form-grid">
+        <label>Window id
+            <input @bind="windowId" placeholder="window:1001" autocomplete="off" />
+        </label>
+        <label>Payload
+            <input @bind="payload" placeholder="Enter window payload" autocomplete="off" />
+        </label>
+    </div>
+
+    <div class="actions">
+        <button type="button" @onclick="UpdateAsync">Update window</button>
+    </div>
+
+    <p class="status">@status</p>
+    @if (!string.IsNullOrEmpty(Client.LastError)) { <p class="error">@Client.LastError</p> }
+    else if (Client.LastWindow is not null) { <p class="ok">Update accepted</p> }
+    <pre class="result">@resultJson</pre>
+</section>
+
+@code {
+    private string windowId = string.Empty;
+    private string payload = string.Empty;
+    private string status = "Enter a window id and payload, then update.";
+    private string resultJson = "{}";
+
+    protected override void OnInitialized() => Client.StateChanged += () => InvokeAsync(StateHasChanged);
+
+    private async Task UpdateAsync()
+    {
+        if (string.IsNullOrWhiteSpace(windowId)) { status = "Window id is required."; return; }
+        if (string.IsNullOrWhiteSpace(payload)) { status = "Payload is required."; return; }
+        var result = await Client.UpdateAsync(windowId.Trim(), payload.Trim());
+        status = result?.Message ?? "Update failed";
+        resultJson = System.Text.Json.JsonSerializer.Serialize(result, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}

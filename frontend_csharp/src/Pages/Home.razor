@@ -1,0 +1,69 @@
+@page "/"
+@namespace DesktopUi.Frontend
+@inject DesktopClient Client
+@inject VersionInfo Version
+@inject NavigationManager Nav
+
+<section class="panel">
+    <h1>Home</h1>
+    <p class="lead">
+        Manage logical desktop windows through the host API (open, inspect, update, close)
+        for this FE/BE branch. Use the top navigation to move between pages.
+    </p>
+
+    <div class="meta-grid">
+        <div><span class="label">Branch</span><strong>@(liveBranch ?? Version.Branch)</strong></div>
+        <div><span class="label">Frontend .NET</span><strong>@(liveFe ?? Version.FrontendDotnet)</strong></div>
+        <div><span class="label">Backend .NET</span><strong>@(liveBe ?? Version.BackendDotnet)</strong></div>
+        <div><span class="label">Desktop health</span><strong class="@(healthy ? "ok" : "bad")">@healthText</strong></div>
+    </div>
+
+    <div class="actions">
+        <button type="button" @onclick="RefreshAsync">Refresh status</button>
+        <button type="button" class="secondary" @onclick='() => Nav.NavigateTo("open")'>Go to Open</button>
+        <button type="button" class="secondary" @onclick='() => Nav.NavigateTo("inspect")'>Go to Inspect</button>
+        <button type="button" class="secondary" @onclick='() => Nav.NavigateTo("update")'>Go to Update</button>
+        <button type="button" class="secondary" @onclick='() => Nav.NavigateTo("close")'>Go to Close</button>
+        <button type="button" class="secondary" @onclick='() => Nav.NavigateTo("stats")'>Go to Stats</button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <p class="error">@error</p>
+    }
+</section>
+
+@code {
+    private string? liveBranch;
+    private string? liveFe;
+    private string? liveBe;
+    private string healthText = "Checking…";
+    private bool healthy;
+    private string? error;
+
+    protected override async Task OnInitializedAsync() => await RefreshAsync();
+
+    private async Task RefreshAsync()
+    {
+        error = null;
+        try
+        {
+            var health = await Client.HealthAsync();
+            var version = await Client.VersionAsync();
+            healthy = health is not null;
+            healthText = healthy ? "healthy" : "unavailable";
+            if (version is System.Text.Json.JsonElement el)
+            {
+                if (el.TryGetProperty("branch", out var b)) liveBranch = b.GetString();
+                if (el.TryGetProperty("frontend_dotnet", out var fe)) liveFe = fe.GetString();
+                if (el.TryGetProperty("backend_dotnet", out var be)) liveBe = be.GetString();
+            }
+        }
+        catch (Exception ex)
+        {
+            healthy = false;
+            healthText = "unavailable";
+            error = "Desktop API not reachable at http://localhost:5081. Start the backend, then refresh. " + ex.Message;
+        }
+    }
+}
